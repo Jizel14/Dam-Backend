@@ -4,16 +4,23 @@ import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from './schemas/user.schema';
+import { Otp } from './schemas/otp.schema';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Role } from './enums/role.enums';
+import { MailService } from './mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Otp.name) private otpModel: Model<Otp>,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async signupUser(signupDto: SignupDto): Promise<{ token: string; user: any }> {
@@ -151,5 +158,111 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
     return { message: 'User deleted successfully' };
+  }
+
+  /**
+   * Generate and send OTP for password reset
+   */
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+    const { email } = forgotPasswordDto;
+
+    // Check if user exists
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return { message: 'If the email exists, an OTP has been sent' };
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Delete any existing OTPs for this email
+    await this.otpModel.deleteMany({ email });
+
+    // Save OTP to database (expires in 10 minutes)
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
+    await this.otpModel.create({
+      email,
+      otp,
+      expiresAt,
+      isUsed: false,
+    });
+
+    // Send OTP via email
+    try {
+      await this.mailService.sendOtpEmail(email, otp);
+    } catch (error) {
+      throw new BadRequestException('Failed to send OTP email');
+    }
+
+    return { message: 'OTP sent successfully to your email' };
+  }
+
+  /**
+   * Verify OTP code
+   */
+  async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{ message: string; valid: boolean }> {
+    const { email, otp } = verifyOtpDto;
+
+    // Find the OTP
+    const otpRecord = await this.otpModel.findOne({
+      email,
+      otp,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!otpRecord) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    return { message: 'OTP verified successfully', valid: true };
+  }
+
+  /**
+   * Reset password using OTP
+   */
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+    const { email, otp, newPassword } = resetPasswordDto;
+
+    // Verify OTP
+    const otpRecord = await this.otpModel.findOne({
+      email,
+      otp,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!otpRecord) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    // Find user
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    // Mark OTP as used
+    otpRecord.isUsed = true;
+    await otpRecord.save();
+
+    // Send confirmation email
+    try {
+      await this.mailService.sendPasswordChangedEmail(email, user.name);
+    } catch (error) {
+      console.error('Failed to send password changed email:', error);
+    }
+
+    return { message: 'Password reset successfully' };
   }
 }
