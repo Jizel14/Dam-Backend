@@ -1,98 +1,184 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# LingoQuest Kids Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+🎮 AR Language Learning Platform for Kids (4-12 years)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Project Structure
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```
+src/
+ ├── auth/
+ │    ├── auth.controller.ts
+ │    ├── auth.service.ts
+ │    ├── mail.service.ts
+ │    ├── jwt.strategy.ts
+ │    ├── dto/
+ │    │    ├── signup.dto.ts
+ │    │    ├── signup-parent.dto.ts
+ │    │    ├── signup-teacher.dto.ts
+ │    │    ├── create-kid.dto.ts
+ │    │    ├── login.dto.ts
+ │    │    ├── create-admin.dto.ts
+ │    │    ├── forgot-password.dto.ts
+ │    │    ├── verify-otp.dto.ts
+ │    │    └── reset-password.dto.ts
+ │    ├── schemas/
+ │    │    ├── user.schema.ts
+ │    │    └── otp.schema.ts
+ │    ├── guards/
+ │    │    └── role.guards.ts
+ │    ├── decorators/
+ │    │    └── role.decorator.ts
+ │    └── enums/
+ │         └── role.enums.ts
+ ├── words/
+ │    ├── words.controller.ts
+ │    ├── words.service.ts
+ │    ├── schemas/
+ │    │    ├── word.schema.ts
+ │    │    └── category.schema.ts
+ │    └── dto/
+ │         ├── create-word.dto.ts
+ │         └── update-word.dto.ts
+ ├── children/
+ │    ├── children.controller.ts
+ │    ├── children.service.ts
+ │    ├── schemas/
+ │    │    └── child-profile.schema.ts
+ │    └── dto/
+ │         ├── create-child-profile.dto.ts
+ │         └── update-child-profile.dto.ts
+ ├── stories/
+ │    ├── stories.controller.ts
+ │    ├── stories.service.ts
+ │    ├── schemas/
+ │    │    └── story.schema.ts
+ │    └── dto/
+ │         └── create-story.dto.ts
+ ├── quests/
+ │    ├── quests.controller.ts
+ │    ├── quests.service.ts
+ │    ├── schemas/
+ │    │    ├── quest.schema.ts
+ │    │    └── quest-progress.schema.ts
+ │    └── dto/
+ │         └── create-quest.dto.ts
+ ├── progress/
+ │    ├── progress.controller.ts
+ │    ├── progress.service.ts
+ │    ├── schemas/
+ │    │    └── scan-event.schema.ts
+ │    └── dto/
+ │         └── create-scan-event.dto.ts
+ ├── lessons/
+ │    ├── lessons.controller.ts
+ │    ├── lessons.service.ts
+ │    ├── schemas/
+ │    │    └── lesson.schema.ts
+ │    └── dto/
+ │         ├── create-lesson.dto.ts
+ │         └── update-lesson.dto.ts
+ ├── quizzes/
+ │    ├── quizzes.controller.ts
+ │    ├── quizzes.service.ts
+ │    ├── schemas/
+ │    │    ├── quiz.schema.ts
+ │    │    └── quiz-attempt.schema.ts
+ │    └── dto/
+ │         ├── create-quiz.dto.ts
+ │         └── submit-quiz.dto.ts
+ ├── twin-talk/
+ │    ├── twin-talk.controller.ts
+ │    ├── twin-talk.service.ts
+ │    ├── schemas/
+ │    │    └── twin-session.schema.ts
+ │    └── dto/
+ │         ├── create-session.dto.ts
+ │         ├── join-session.dto.ts
+ │         └── complete-round.dto.ts
+ ├── main.ts
+ └── app.module.ts
 ```
 
-## Compile and run the project
+## Features
+
+- 🔐 **Multi-role Authentication** (Admin, Teacher, Parent, Kid)
+- 📚 **Word Library** with AR scanning support
+- 👨‍👩‍👧 **Child Profile Management** with XP & Pet Building
+- 📖 **AI Story Generation** from scanned objects
+- 🎯 **Classroom Quest Builder** for teachers
+- 🏆 **Progress Tracking** & Analytics
+- 📝 **Lessons & Quizzes** management
+- 👫 **Twin-Talk** co-play sessions
+- 📧 **Email** (OTP, Welcome, Password Reset)
+
+## Tech Stack
+
+- **Framework**: NestJS (TypeScript)
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT + Passport
+- **Email**: Nodemailer
+- **Validation**: class-validator
+- **Documentation**: Swagger/OpenAPI
+
+## Installation
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+## Environment Variables
+
+Create a `.env` file:
+
+```env
+# Database
+DB_URI=mongodb://localhost:27017/LingoQuestKids
+
+# JWT
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=1h
+
+# App
+PORT=3000
+
+# SMTP Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
+```
+
+## Running the App
 
 ```bash
-# unit tests
-$ npm run test
+# Development
+npm run start:dev
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Production
+npm run start:prod
 ```
 
-## Deployment
+## API Documentation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Access Swagger docs at: `http://localhost:3000/api`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Roles & Permissions
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+- **Admin**: Full system access
+- **Teacher**: Create lessons, quizzes, quests; view student progress
+- **Parent**: Manage kid profiles, set controls, view progress
+- **Kid**: Limited access, managed by parents
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Project Timeline (6 weeks)
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Week 1: AR Scan & Label, content packs
+- Week 2: Phonics Bubbles
+- Week 3: AI Story Blocks
+- Week 4: Twin-Talk co-play
+- Week 5: Parent Dashboard & Quest Builder
+- Week 6: QA, security, beta testing
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Private - LingoQuest Kids © 2024

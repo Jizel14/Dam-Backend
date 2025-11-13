@@ -11,6 +11,9 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SignupParentDto } from './dto/signup-parent.dto';
+import { SignupTeacherDto } from './dto/signup-teacher.dto';
+import { CreateKidDto } from './dto/create-kid.dto';
 import { Role } from './enums/role.enums';
 import { MailService } from './mail.service';
 
@@ -35,12 +38,12 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with USER role
+    // Create user with PARENT role (default)
     const user = await this.userModel.create({
       ...rest,
       email,
       password: hashedPassword,
-      roles: [Role.USER],
+      roles: [Role.PARENT],
     });
 
     // Generate token
@@ -132,7 +135,7 @@ export class AuthService {
         id: user._id,
         name: user.name,
         email: user.email,
-        roles: user.roles,
+        roles: user.roles, // ✅ Already returning roles
         age: user.age,
         phone: user.phone,
         address: user.address,
@@ -264,5 +267,125 @@ export class AuthService {
     }
 
     return { message: 'Password reset successfully' };
+  }
+
+  async signupParent(signupParentDto: SignupParentDto): Promise<{ token: string; user: any }> {
+    const { email, password, ...rest } = signupParentDto;
+
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.userModel.create({
+      ...rest,
+      email,
+      password: hashedPassword,
+      roles: [Role.PARENT],
+    });
+
+    const token = this.jwtService.sign({ 
+      id: user._id, 
+      roles: user.roles 
+    });
+
+    // Send welcome email
+    try {
+      await this.mailService.sendWelcomeEmail(email, user.name);
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+    }
+
+    return {
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        phone: user.phone,
+        address: user.address,
+      },
+    };
+  }
+
+  async signupTeacher(signupTeacherDto: SignupTeacherDto): Promise<{ token: string; user: any }> {
+    const { email, password, ...rest } = signupTeacherDto;
+
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.userModel.create({
+      ...rest,
+      email,
+      password: hashedPassword,
+      roles: [Role.TEACHER],
+    });
+
+    const token = this.jwtService.sign({ 
+      id: user._id, 
+      roles: user.roles 
+    });
+
+    try {
+      await this.mailService.sendWelcomeEmail(email, user.name);
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+    }
+
+    return {
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        school: user.school,
+        grade: user.grade,
+      },
+    };
+  }
+
+  async createKid(parentId: string, createKidDto: CreateKidDto): Promise<{ user: any }> {
+    const { username, age, ...rest } = createKidDto;
+
+    // Check if username exists
+    const existingKid = await this.userModel.findOne({ email: `${username}@kid.local` });
+    if (existingKid) {
+      throw new ConflictException('Username already taken');
+    }
+
+    // Create kid account (no password, parent manages)
+    const kid = await this.userModel.create({
+      ...rest,
+      age,
+      email: `${username}@kid.local`, // Internal email
+      password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+      roles: [Role.KID],
+    });
+
+    return {
+      user: {
+        id: kid._id,
+        name: kid.name,
+        username,
+        avatar: kid.avatar,
+        age: kid.age,
+        level: createKidDto.level,
+        roles: kid.roles,
+      },
+    };
+  }
+
+  async getKidsByParent(parentId: string): Promise<User[]> {
+    // In a real app, you'd have a relation between parent and kids
+    // For now, return all kids (you should add parentId to User schema)
+    return this.userModel.find({ roles: Role.KID }).select('-password').exec();
   }
 }

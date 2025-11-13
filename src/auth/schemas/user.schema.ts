@@ -7,13 +7,13 @@ export class User extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, unique: true, lowercase: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
   @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true, type: [String], enum: Role, default: [Role.USER] })
+  @Prop({ type: [String], enum: Role, required: true })
   roles: Role[];
 
   @Prop()
@@ -25,8 +25,20 @@ export class User extends Document {
   @Prop()
   address?: string;
 
+  @Prop()
+  school?: string;
+
+  @Prop()
+  grade?: string;
+
+  @Prop()
+  avatar?: string;
+
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ default: 'en' })
+  locale: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
