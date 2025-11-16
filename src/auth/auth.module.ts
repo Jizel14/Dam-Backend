@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { Otp, OtpSchema } from './schemas/otp.schema';
+import { ChildProfile, ChildProfileSchema } from '../children/schemas/child-profile.schema';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -26,6 +27,7 @@ import { MailService } from './mail.service';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Otp.name, schema: OtpSchema },
+      { name: ChildProfile.name, schema: ChildProfileSchema }, // ✅ Add ChildProfile
     ]),
   ],
   controllers: [AuthController],

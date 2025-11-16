@@ -15,6 +15,12 @@ export class ChildProfile extends Document {
   @Prop({ required: true, enum: ['4-6', '7-9', '10-12'] })
   level: string;
 
+  @Prop({ required: true })
+  age: number;
+
+  @Prop() // ✅ Add grade field to match UpdateKidDto
+  grade?: string;
+
   @Prop({ default: 0 })
   xp: number;
 
@@ -32,3 +38,6 @@ export class ChildProfile extends Document {
 }
 
 export const ChildProfileSchema = SchemaFactory.createForClass(ChildProfile);
+
+// ✅ Index for fast parent queries
+ChildProfileSchema.index({ userId: 1 });
